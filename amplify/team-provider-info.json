@@ -1,0 +1,30 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-ufreportingapp-dev-85542-authRole",
+      "UnauthRoleArn": "arn:aws:iam::666827054328:role/amplify-ufreportingapp-dev-85542-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::666827054328:role/amplify-ufreportingapp-dev-85542-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-ufreportingapp-dev-85542-deployment",
+      "UnauthRoleName": "amplify-ufreportingapp-dev-85542-unauthRole",
+      "StackName": "amplify-ufreportingapp-dev-85542",
+      "StackId": "arn:aws:cloudformation:us-east-1:666827054328:stack/amplify-ufreportingapp-dev-85542/807499d0-d9fa-11ed-9ed9-0a7141983ce1",
+      "AmplifyAppId": "d2wvnnaq173st0"
+    },
+    "categories": {
+      "api": {
+        "ufreportingapp": {}
+      },
+      "function": {
+        "UFReportingCreateReport": {
+          "deploymentBucketName": "amplify-ufreportingapp-dev-85542-deployment",
+          "s3Key": "amplify-builds/UFReportingCreateReport-45387851495962704978-build.zip",
+          "athenaOutputBucket": "s3://scotthoutput"
+        }
+      },
+      "storage": {
+        "UFReportingTable": {}
+      }
+    }
+  }
+}

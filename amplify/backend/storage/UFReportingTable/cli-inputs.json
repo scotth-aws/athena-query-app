@@ -1,0 +1,14 @@
+{
+  "resourceName": "UFReportingTable",
+  "tableName": "UFReportingTable",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "createdAt",
+    "fieldType": "number"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

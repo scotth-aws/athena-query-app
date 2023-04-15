@@ -1,0 +1,81 @@
+{
+  "api": {
+    "ufreportingapp": {
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [],
+          "defaultAuthentication": {
+            "apiKeyConfig": {
+              "apiKeyExpirationDate": "2024-04-12T18:21:22.262Z",
+              "apiKeyExpirationDays": 365,
+              "description": "UFReporting"
+            },
+            "authenticationType": "API_KEY"
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
+  "function": {
+    "UFReportingCreateReport": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn",
+            "StreamArn"
+          ],
+          "category": "storage",
+          "resourceName": "UFReportingTable"
+        },
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ],
+          "category": "api",
+          "resourceName": "ufreportingapp"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_UFReportingCreateReport_athenaOutputBucket": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "UFReportingCreateReport"
+        }
+      ]
+    },
+    "AMPLIFY_function_UFReportingCreateReport_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "UFReportingCreateReport"
+        }
+      ]
+    },
+    "AMPLIFY_function_UFReportingCreateReport_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "UFReportingCreateReport"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "UFReportingTable": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "AppSyncApiName": "ufreportingapp",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthModeLastUpdated": "2023-04-13T18:21:26.431Z"
+}

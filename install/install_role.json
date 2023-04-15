@@ -1,0 +1,129 @@
+{
+  "Resources": {
+    "ERDAmplifyConsoleServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Description": "This role is assumed by Amplify for application execution ",
+        "RoleName": "erd-amplify-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "amplify.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AdministratorAccess-Amplify",
+          "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+        ]
+      }
+    },
+    "ERDStepFunctionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "ERDStepFunctionPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "states:DescribeActivity",
+                "states:DescribeStateMachine",
+                "states:ListExecutions",
+                "states:CreateActivity",
+                "states:UpdateStateMachine",
+                "states:DeleteStateMachine",
+                "states:StopExecution",
+                "states:UntagResource",
+                "states:TagResource",
+                "states:StartSyncExecution",
+                "states:DescribeStateMachineForExecution",
+                "states:DescribeExecution",
+                "states:GetExecutionHistory",
+                "states:DeleteActivity",
+                "states:StartExecution",
+                "states:GetActivityTask",
+                "states:CreateStateMachine",
+                "states:ListTagsForResource",
+                "states:SendTaskSuccess",
+                "states:ListStateMachines",
+                "states:SendTaskFailure",
+                "states:ListActivities",
+                "states:SendTaskHeartbeat"
+              ],
+              "Resource": "arn:aws:states:*:*:stateMachine:*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "ERDAmplifyConsoleServiceRole"
+          }
+        ]
+      }
+    },
+    "ERDOtherPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "ERDOtherPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:DeleteRole",
+                "iam:PutRolePolicy",
+                "iam:CreateRole",
+                "iam:DeleteRolePolicy",
+                "iam:PassRole",
+                "iam:DetachRolePolicy",
+                "iam:AttachRolePolicy",
+                "iam:CreateInstanceProfile",
+                "iam:AddRoleToInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile",
+                "ec2:DescribeImages",
+                "ec2:CreateSecurityGroup",
+                "ec2:DescribeSecurityGroups",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DescribeInstances",
+                "ec2:CreateTags",
+                "ec2:RunInstances",
+                "ec2:StopInstances",
+                "ec2:TerminateInstances",
+                "ssm:GetParameters"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "ERDAmplifyConsoleServiceRole"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ERDAmplifyConsoleServiceRole": {
+      "Description": "The Amplify Console Service Role",
+      "Value": {
+        "Ref": "ERDAmplifyConsoleServiceRole"
+      }
+    }
+  }
+}

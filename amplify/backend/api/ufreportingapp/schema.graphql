@@ -1,0 +1,253 @@
+input CreateReportInput {
+	id: String!
+	createdAt: Int!
+	query: String!
+    name: String
+	description: String
+    result: String
+	resultSummary: String
+	outputLocation: String
+}
+
+input DeleteReportInput {
+	id: String!
+}
+
+enum ModelAttributeTypes {
+	binary
+	binarySet
+	bool
+	list
+	map
+	number
+	numberSet
+	string
+	stringSet
+	_null
+}
+
+input ModelBooleanInput {
+	ne: Boolean
+	eq: Boolean
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	between: [Float]
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+	size: ModelSizeInput
+}
+
+input ModelIntInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	between: [Int]
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelSizeInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	between: [Int]
+}
+
+enum ModelSortDirection {
+	ASC
+	DESC
+}
+
+input ModelStringInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	beginsWith: String
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+	size: ModelSizeInput
+}
+
+input ModelSubscriptionBooleanInput {
+	ne: Boolean
+	eq: Boolean
+}
+
+input ModelSubscriptionFloatInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	between: [Float]
+	in: [Float]
+	notIn: [Float]
+}
+
+input ModelSubscriptionIDInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+	in: [ID]
+	notIn: [ID]
+}
+
+input ModelSubscriptionIntInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	between: [Int]
+	in: [Int]
+	notIn: [Int]
+}
+
+input ModelSubscriptionStringInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	beginsWith: String
+	in: [String]
+	notIn: [String]
+}
+
+input ModelSubscriptionReportFilterInput {
+	id: ModelSubscriptionStringInput
+	createdAt: Int
+	query: ModelSubscriptionStringInput
+	name: ModelSubscriptionStringInput
+	description: ModelSubscriptionStringInput
+    result: ModelSubscriptionStringInput
+	resultSummary: ModelSubscriptionStringInput
+	outputLocation: ModelSubscriptionStringInput
+	and: [ModelSubscriptionReportFilterInput]
+	or: [ModelSubscriptionReportFilterInput]
+}
+
+input ModelReportConditionInput {
+    id: ModelStringInput
+	createdAt: Int
+	query: ModelStringInput
+	name: ModelStringInput
+	description: ModelStringInput
+    result: ModelStringInput
+	resultSummary: ModelStringInput
+	outputLocation: ModelStringInput
+	and: [ModelReportConditionInput]
+	or: [ModelReportConditionInput]
+	not: ModelReportConditionInput
+}
+
+type ModelReportConnection {
+	items: [Report]!
+	nextToken: String
+}
+
+input ModelReportFilterInput {
+	id: ModelStringInput
+	createdAt: Int
+	name: ModelStringInput
+	query: ModelStringInput
+	description: ModelStringInput
+    result: ModelStringInput
+	resultSummary: ModelStringInput
+	outputLocation: ModelStringInput
+	and: [ModelReportFilterInput]
+	or: [ModelReportFilterInput]
+	not: ModelReportFilterInput
+}
+
+type Mutation {
+	createReport(input: CreateReportInput!, condition: ModelReportConditionInput): Report @function(name: "UFReportingCreateReport-${env}")
+	updateReport(input: UpdateReportInput!, condition: ModelReportConditionInput): Report
+	deleteReport(input: DeleteReportInput!, condition: ModelReportConditionInput): Report
+}
+
+type Query {
+	getReport(id: ID!): Report
+	listReports(filter: ModelReportFilterInput, limit: Int, nextToken: String): ModelReportConnection
+}
+
+type Subscription {
+	onCreateReport(filter: ModelSubscriptionReportFilterInput): Report
+		@aws_subscribe(mutations: ["createReport"])
+	onUpdateReport(filter: ModelSubscriptionReportFilterInput): Report
+		@aws_subscribe(mutations: ["updateReport"])
+	onDeleteReport(filter: ModelSubscriptionReportFilterInput): Report
+		@aws_subscribe(mutations: ["deleteReport"])
+}
+
+type Report {
+	id: String!
+	query: String!
+	name: String!
+	description: String
+    result: String
+	resultSummary: String
+	outputLocation: String
+	createdAt: Int!
+	updatedAt: Int!
+}
+
+input UpdateReportInput {
+	id: String!
+	createdAt: Int!
+	query: String!
+	name: String
+    result: String
+	resultSummary: String
+	outputLocation: String
+	description: String
+}
