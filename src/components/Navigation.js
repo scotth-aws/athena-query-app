@@ -34,7 +34,7 @@ const Navigation = (current_user) => {
             text: "Home",
             expanded: true,
             items: [
-                { type: "link", text: "Reporting Environments", href: "/Home" }
+                { type: "link", text: "Generated Reports", href: "/Home" }
 
             ]
         });
@@ -46,7 +46,7 @@ const Navigation = (current_user) => {
             expanded: true,
             items: [
 
-                { type: "link", text: "Variant Reports by Filter", href: "/EC2" }
+                { type: "link", text: "Variant Reports by Filter", href: "/Query" }
 
             ]
         });

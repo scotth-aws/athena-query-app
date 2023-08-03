@@ -14,6 +14,7 @@ import {
   Table,
   Pagination,
   CollectionPreferences,
+  Cards
 
 } from "@cloudscape-design/components";
 //import { appLayoutLabels } from "../labels";
@@ -25,210 +26,253 @@ import {
   graphqlOperation,
 
 } from "aws-amplify";
+import { listReports } from "../../graphql/queries";
 
-const Content = (user) => {
-  
-  const [selectedItems, setSelectedItems] = React.useState([{ name: "Item 2" }]);
+const Content = () => {
+  const [currentPageIndex, setCurrentPageIndex] = useState(1);
+  const [selectedItems, setSelectedItems] = React.useState([{ name: "" }]);
+  const [selectedItemsOutputs, setSelectedItemsOutputs] = React.useState([]);
+  const [reports, setReports] = React.useState([]);
+  const [pagesCount, setPagesCount] = React.useState(
+    Math.ceil(reports.length / 5)
+  );
 
 
+  useEffect(() => {
+    API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
 
-  console.log('about to render ');
+      console.log('listReports ' + JSON.stringify(response.data.listReports.items));
+      setReports(response.data.listReports.items);
+
+    })
+    /*
+    API.graphql({
+        query: onCreateHackathonLectureSummary,
+
+    }).subscribe({
+        next: (data) => {
+
+            if (process.env.NODE_ENV === 'development')
+                console.log(
+                    "onCreateHackathonLectureSummary event " +
+                    JSON.stringify(data.value.data.onCreateHackathonLectureSummary)
+                );
+
+            //alert('Lecture Summaries Updated');
+            setAlertVisible(true);
+
+
+        },
+    });
+    */
+  }, []);
+
+  //console.log('about to render ' + JSON.stringify(reports));
+
+  const selectionChangeButton = (detail) => {
+   
+      console.log("selectionChangeButton HIT " + JSON.stringify(detail.selectedItems));
+    setSelectedItems(detail.selectedItems);
+    if (detail.selectedItems.length === 0) {
+     
+      //setSelectedItemsOutputs([]);
+      setSelectedItems(detail.selectedItems);
+      return;
+    } else {
+
+    }
+
+  };
+
   return (
     <div className="container">
-   
 
-   <Table
-      onSelectionChange={({ detail }) =>
-        
-        setSelectedItems(detail.selectedItems)
-      }
-      selectedItems={selectedItems}
-      ariaLabels={{
-        selectionGroupLabel: "Items selection",
-        allItemsSelectionLabel: ({ selectedItems }) =>
-          `${selectedItems.length} ${
-            selectedItems.length === 1 ? "item" : "items"
-          } selected`,
-        itemSelectionLabel: ({ selectedItems }, item) => {
-          const isItemSelected = selectedItems.filter(
-            i => i.name === item.name
-          ).length;
-          return `${item.name} is ${
-            isItemSelected ? "" : "not"
-          } selected`;
+
+      <Table
+        onSelectionChange={({ detail }) =>
+
+        selectionChangeButton(detail)
         }
-      }}
-      columnDefinitions={[
-        {
-          id: "variable",
-          header: "Variable name",
-          cell: e => e.name,
-          sortingField: "name"
-        },
-        {
-          id: "value",
-          header: "Text value",
-          cell: e => e.alt,
-          sortingField: "alt"
-        },
-        { id: "type", header: "Type", cell: e => e.type },
-        {
-          id: "description",
-          header: "Description",
-          cell: e => e.description
-        }
-      ]}
-      items={[
-        {
-          name: "Item 1",
-          alt: "First",
-          description: "This is the first item",
-          type: "1A",
-          size: "Small"
-        },
-        {
-          name: "Item 2",
-          alt: "Second",
-          description: "This is the second item",
-          type: "1B",
-          size: "Large"
-        },
-        {
-          name: "Item 3",
-          alt: "Third",
-          description: "-",
-          type: "1A",
-          size: "Large"
-        },
-        {
-          name: "Item 4",
-          alt: "Fourth",
-          description: "This is the fourth item",
-          type: "2A",
-          size: "Small"
-        },
-        {
-          name: "Item 5",
-          alt: "-",
-          description:
-            "This is the fifth item with a longer description",
-          type: "2A",
-          size: "Large"
-        },
-        {
-          name: "Item 6",
-          alt: "Sixth",
-          description: "This is the sixth item",
-          type: "1A",
-          size: "Small"
-        }
-      ]}
-      loadingText="Loading resources"
-      selectionType="multi"
-      trackBy="name"
-      visibleColumns={[
-        "variable",
-        "value",
-        "type",
-        "description"
-      ]}
-      empty={
-        <Box textAlign="center" color="inherit">
-          <b>No resources</b>
-          <Box
-            padding={{ bottom: "s" }}
-            variant="p"
-            color="inherit"
-          >
-            No resources to display.
-          </Box>
-          <Button>Create resource</Button>
-        </Box>
-      }
-     
-      header={
-        <Header
-          counter={
-            selectedItems.length
-              ? "(" + selectedItems.length + "/10)"
-              : "(10)"
+        selectedItems={selectedItems}
+        ariaLabels={{
+          selectionGroupLabel: "Items selection",
+          allItemsSelectionLabel: ({ selectedItems }) =>
+            `${selectedItems.length} ${selectedItems.length === 1 ? "item" : "items"
+            } selected`,
+          itemSelectionLabel: ({ selectedItems }, item) => {
+            const isItemSelected = selectedItems.filter(
+              i => i.id === item.id
+            ).length;
+            return `${item.id} is ${isItemSelected ? "" : "not"
+              } selected`;
           }
-        >
-          Table with common features
-        </Header>
-      }
-      pagination={
-        <Pagination
-          currentPageIndex={1}
-          pagesCount={2}
-          ariaLabels={{
-            nextPageLabel: "Next page",
-            previousPageLabel: "Previous page",
-            pageLabel: pageNumber =>
-              `Page 1 of all pages`
-          }}
-        />
-      }
-      preferences={
-        <CollectionPreferences
-          title="Preferences"
-          confirmLabel="Confirm"
-          cancelLabel="Cancel"
-          preferences={{
-            pageSize: 10,
-            visibleContent: [
-              "variable",
-              "value",
-              "type",
-              "description"
-            ]
-          }}
-          pageSizePreference={{
-            title: "Page size",
-            options: [
-              { value: 10, label: "10 resources" },
-              { value: 20, label: "20 resources" }
-            ]
-          }}
-          wrapLinesPreference={{
-            label: "Wrap lines",
-            description:
-              "Select to see all the text and wrap the lines"
-          }}
-          stripedRowsPreference={{
-            label: "Striped rows",
-            description:
-              "Select to add alternating shaded rows"
-          }}
-          contentDensityPreference={{
-            label: "Compact mode",
-            description:
-              "Select to display content in a denser, more compact mode"
-          }}
-          visibleContentPreference={{
-            title: "Select visible content",
-            options: [
+        }}
+        columnDefinitions={[
+          {
+            id: "id",
+            header: "Id",
+            cell: e => e.id,
+            sortingField: "id"
+          },
+          {
+            id: "name",
+            header: "Report Name",
+            cell: e => e.name,
+            sortingField: "alt"
+          },
+          { id: "outputLocation", header: "Report Location", cell: e => e.outputLocation },
+          {
+            id: "description",
+            header: "Description",
+            cell: e => e.description
+          }
+        ]}
+        items={reports}
+        loadingText="Loading resources"
+        selectionType="single"
+        trackBy="id"
+        visibleColumns={[
+          "id",
+          "name",
+          "outputLocation"
+        ]}
+        empty={
+          <Box textAlign="center" color="inherit">
+            <b></b>
+            <Box
+              padding={{ bottom: "s" }}
+              variant="p"
+              color="inherit"
+            >
+              No resources to display.
+            </Box>
+            <Button>Create resource</Button>
+          </Box>
+        }
+
+        header={
+          <Header
+            counter={
+              selectedItems.length
+                ? "(" + selectedItems.length + "/10)"
+                : "(10)"
+            }
+          >
+            Completed Reports
+          </Header>
+        }
+        pagination={
+          <Pagination
+            //currentPageIndex={1}
+            currentPageIndex={currentPageIndex}
+            //onChange={({ detail }) => setMatches(detail)}
+            pagesCount={pagesCount}
+            //pagesCount={2}
+            ariaLabels={{
+              nextPageLabel: "Next page",
+              previousPageLabel: "Previous page",
+              pageLabel: pageNumber =>
+                `Page 1 of all pages`
+            }}
+          />
+        }
+        preferences={
+          <CollectionPreferences
+            title="Preferences"
+            confirmLabel="Confirm"
+            cancelLabel="Cancel"
+            preferences={{
+              pageSize: 10,
+              visibleContent: [
+                "id",
+                "name",
+                "outputLocation"
+              ]
+            }}
+            pageSizePreference={{
+              title: "Page size",
+              options: [
+                { value: 10, label: "10 resources" },
+                { value: 20, label: "20 resources" }
+              ]
+            }}
+            wrapLinesPreference={{
+              label: "Wrap lines",
+              description:
+                "Select to see all the text and wrap the lines"
+            }}
+            stripedRowsPreference={{
+              label: "Striped rows",
+              description:
+                "Select to add alternating shaded rows"
+            }}
+            contentDensityPreference={{
+              label: "Compact mode",
+              description:
+                "Select to display content in a denser, more compact mode"
+            }}
+            visibleContentPreference={{
+              title: "Select visible content",
+              options: [
+                {
+                  label: "Main distribution properties",
+                  options: [
+                    {
+                      id: "id",
+                      label: "I",
+                      editable: false
+                    },
+                    { id: "name", label: "Name", editable: false },
+                    { id: "outputLocation", label: "Report Location", editable: false },
+                    {
+                      id: "description",
+                      label: "Description"
+                    }
+                  ]
+                }
+              ]
+            }}
+          />
+        }
+      />
+      <div className="outputContainer">
+
+        <Cards
+          cardDefinition={{
+            sections: [
               {
-                label: "Main distribution properties",
-                options: [
-                  {
-                    id: "variable",
-                    label: "Variable name",
-                    editable: false
-                  },
-                  { id: "value", label: "Text value" },
-                  { id: "type", label: "Type" },
-                  {
-                    id: "description",
-                    label: "Description"
-                  }
-                ]
-              }
-            ]
+                id: "outputs",
+                content: (item) =>
+                  item.lectureTitle.substring(1, 4) !== "ttp" ? (
+                    <React.Fragment>
+                      <TextContent>{item.name}</TextContent>
+
+
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <TextContent>{item.name}</TextContent>
+
+                    </React.Fragment>
+                  ),
+              },
+            ],
           }}
+          cardsPerRow={[{ cards: 1 }, { minWidth: 300, cards: 2 }]}
+          items={selectedItemsOutputs}
+          loadingText="Loading resources"
+          empty={
+            <Box textAlign="center" color="inherit">
+              <Box padding={{ bottom: "s" }} variant="p" color="inherit">
+             
+              </Box>
+            </Box>
+          }
+          header={<Header variant="h2" description="">Summary Output</Header>}
         />
-      }
-    />
+
+
+      </div>
     </div>
   );
 }
@@ -256,6 +300,18 @@ function Home() {
         token: "",
       };
 
+
+      /*
+            API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
+      
+              console.log('listReports ' + JSON.stringify(response.data.listReports.items));
+              setItems(response.data.listReports.items);
+      
+            })
+            */
+
+
+
     } catch (e) {
       console.log("setUser Error");
       setUser(current_user);
@@ -276,7 +332,7 @@ function Home() {
     <AppLayout
       disableContentPaddings={false}
       navigation={<Navigation User={User} />}
-      content={<Content username={User} />}
+      content={<Content />}
       contentType="default"
       toolsOpen={rnavopen}
       //toolsWidth={350}

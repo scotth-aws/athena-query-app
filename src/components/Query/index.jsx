@@ -7,9 +7,8 @@ import {
   API,
   graphqlOperation,
 } from "aws-amplify";
-//import { search } from "../../graphql/queries.js";
-//import { onSearchResult } from "../../graphql/subscriptions";
-//import { withAuthenticator } from "@aws-amplify/ui-react";
+
+import { createReport } from "../../graphql/mutations";
 import "@aws-amplify/ui-react/styles.css";
 import {
   AppLayout,
@@ -29,8 +28,11 @@ import {
 //import { appLayoutLabels, itemSelectionLabels } from "../labels";
 import Navigation from "../Navigation";
 import { useNavigate } from "react-router-dom";
-
+import { Amplify } from "aws-amplify";
+import awsconfig from "../../aws-exports";
 const logger = new Logger("erdLogger", "DEBUG");
+
+Amplify.configure(awsconfig);
 
 const Content = (user) => {
   //console.log("Content username " + JSON.stringify(user));
@@ -48,47 +50,59 @@ const Content = (user) => {
   var [alertSuccess, setAlertSuccess] = useState("success");
 
   var [deploymentHeader, setDeploymentHeader] = useState(
-    "Deployment In Progress, this may take 10 minutes"
+    "Report Generation In Progress, this may take a few minutes"
   );
   const [visible, setVisible] = React.useState(false);
   const [selectValue, setSelectValue] = useState({
-    label: "Variant Report 1",
+    label: "List of all variant genes and coordinates",
     value: "1",
   });
   var [modalStatus, setModalStatus] = useState("MODAL_IN_PROGRESS");
 
   const modalExit = () => {
-    if (modalStatus === "MODAL_IN_PROGRESS") {
-    } else {
-      setVisible(false);
-      navigate("/");
-    }
+
+    setVisible(false);
+    navigate("/");
+
   };
   const submitFormHandler = (event, selectValue) => {
+    console.log('selectValue '+JSON.stringify(selectValue));
     setDisabled(true);
     setAlertSuccess("success");
-    setAlert("Deployment Status: \"IN_PROGRESS\"");
+    setAlert("Report Generation: \"IN_PROGRESS\"");
     setVisible(true);
+    var description = "";
+    var name = ""
+    if (selectValue.value === '1') {
+      description = 'A report on all variants';
+      name = "List of all variant genes and coordinates";
+    } else if (selectValue.value === '2') {
+      description = 'A report on all variants where CADD score >=2';
+      name = "List of all variant genes and coordinates where CADD score >=20";
+    } else {
+      description = 'A report on all variants where ClinVar annotations are likely_pathogenic or pathogenic';
+      name = "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic";
+    }
+    try {
+      var qinput = { input: { name: name, description: description, query: "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 1", createdAt: 1691074526 } }
+      API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
 
-    const searchObject = {
-      StackName: "research-ec2-" + cuser,
-      Parameters:
-        "[{'ParameterKey': 'InstanceType','ParameterValue': '" +
-        selectValue.label +
-        "'}]",
-      DisableRollback: "False",
-      TimeoutInMinutes: "30",
-      Capabilities: "['CAPABILITY_IAM','CAPABILITY_NAMED_IAM']",
-      NotificationARNs: "[]",
-      Tags: "[{'Key': 'name', 'Value' : 'EC2 Instance'}]",
-      BucketKey: "ec2_instance.json",
-      BucketName: "",
-      wait_time: 5,
-      token: token,
-    };
+        console.log('createReport ' + JSON.stringify(response.data));
+        navigate("/");
 
-    
-     
+
+
+      })
+    } catch (e) {
+
+      console.log(JSON.stringify(e));
+    } finally {
+
+      console.log("finally");
+
+    }
+
+
   };
   return (
     <div id="top" className="ec2App">
@@ -97,7 +111,7 @@ const Content = (user) => {
           header={
             <Header variant="h3">
               <strong style={{ color: headerColor }}>
-                Create an Variant report that . . . 
+                Generate Genomics Reports
               </strong>
             </Header>
           }
@@ -132,18 +146,18 @@ const Content = (user) => {
                 <Select
                   options={[
                     {
-                      label: "Variant Report 1",
+                      label: "List of all variant genes and coordinates",
                       value: "1",
                     },
                     {
-                      label: "Variant Report 2",
+                      label: "List of all variant genes and coordinates where CADD score >=20",
                       value: "2",
                     },
                     {
-                      label: "Variant Report 4",
+                      label: "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic",
                       value: "3",
                     }
-                   
+
                   ]}
                   selectedOption={selectValue}
                   onChange={(event) =>
@@ -159,7 +173,7 @@ const Content = (user) => {
                 external
                 variant="primary"
                 externalIconAriaLabel=""
-                href="https://aws.amazon.com/ec2/instance-types/?trk=36c6da98-7b20-48fa-8225-4784bced9843&sc_channel=ps&s_kwcid=AL!4422!3!536392622533!e!!g!!aws%20ec2%20instance%20types&ef_id=Cj0KCQiAgribBhDkARIsAASA5bu5uxV1xqYwmJtgcilwIcQJAvFFWNE1EypSklKYbdL4fxYPgudghK0aAkA8EALw_wcB:G:s&s_kwcid=AL!4422!3!536392622533!e!!g!!aws%20ec2%20instance%20types"
+                href="https://neurology.ufl.edu/divisions/lnn/"
                 disabled={linkDisabled}
               >
                 Learn more about these Reports
@@ -196,16 +210,16 @@ const SideHelp = () => (
   <HelpPanel header={<h2>Variant Report Help</h2>}>
     <SpaceBetween size="m">
       <Box>
-        <strong>This is where help around the report generation will be .. </strong>
-        
+        <strong>This is where help around the report generation will be</strong>
+
       </Box>
-     
+
     </SpaceBetween>
-    
+
   </HelpPanel>
 );
 
-function EC2() {
+function Query() {
   const [User, setUser] = useState({});
   useEffect(() => {
     let current_user = {};
@@ -217,7 +231,7 @@ function EC2() {
         username: "",
         token: "",
       };
-      
+
     } catch (e) {
       console.log("setUser Error");
       setUser(current_user);
@@ -255,4 +269,4 @@ function EC2() {
 }
 
 
-export default EC2;
+export default Query;

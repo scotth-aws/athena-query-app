@@ -3,9 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 import Routing from "./components/Router";
-import {Amplify} from "aws-amplify";
 
-//Amplify.configure(awsconfig);
 
 try {
   
