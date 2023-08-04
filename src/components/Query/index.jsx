@@ -7,7 +7,7 @@ import {
   API,
   graphqlOperation,
 } from "aws-amplify";
-
+import { withAuthenticator } from "@aws-amplify/ui-react";
 import { createReport } from "../../graphql/mutations";
 import "@aws-amplify/ui-react/styles.css";
 import {
@@ -66,7 +66,7 @@ const Content = (user) => {
 
   };
   const submitFormHandler = (event, selectValue) => {
-    console.log('selectValue '+JSON.stringify(selectValue));
+    console.log('selectValue ' + JSON.stringify(selectValue));
     setDisabled(true);
     setAlertSuccess("success");
     setAlert("Report Generation: \"IN_PROGRESS\"");
@@ -221,6 +221,7 @@ const SideHelp = () => (
 
 function Query() {
   const [User, setUser] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     let current_user = {};
     try {
@@ -231,6 +232,21 @@ function Query() {
         username: "",
         token: "",
       };
+      // get the current authenticated user object
+      Auth.currentAuthenticatedUser({
+        bypassCache: false, // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
+      })
+        .then((user) => {
+          setIsLoading(false);
+
+        })
+        .catch(
+          (err) => {
+            setIsLoading(false);
+            if (process.env.NODE_ENV === 'development')
+              console.log("Home -> index.jsx - Auth error " + JSON.stringify(err), Date.now())
+
+          });
 
     } catch (e) {
       console.log("setUser Error");
@@ -252,21 +268,29 @@ function Query() {
   const toolsChange = (detail) => {
     setRnavopen(detail.open);
   };
-  return (
-    <AppLayout
-      disableContentPaddings={false}
-      navigation={<Navigation User={User} />}
-      content={<Content username={User} />}
-      contentType="default"
-      toolsOpen={rnavopen}
-      //toolsWidth={350}
-      tools={<SideHelp />}
-      navigationOpen={lnavopen}
-      onNavigationChange={({ detail }) => navChange(detail)}
-      onToolsChange={({ detail }) => toolsChange(detail)}
-    />
-  );
+  if (!isLoading) {
+    return (
+      <AppLayout
+        disableContentPaddings={false}
+        navigation={<Navigation User={User} />}
+        content={<Content username={User} />}
+        contentType="default"
+        toolsOpen={rnavopen}
+        //toolsWidth={350}
+        tools={<SideHelp />}
+        navigationOpen={lnavopen}
+        onNavigationChange={({ detail }) => navChange(detail)}
+        onToolsChange={({ detail }) => toolsChange(detail)}
+      />
+    );
+  } else {
+    return (
+      <Container>
+        <TextContent>Loading . . . </TextContent>
+      </Container>
+    );
+  }
 }
 
 
-export default Query;
+export default withAuthenticator(Query);;
