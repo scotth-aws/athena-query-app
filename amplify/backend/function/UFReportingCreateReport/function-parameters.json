@@ -1,18 +1,26 @@
 {
   "permissions": {
-    "storage": {
-      "UFReportingTable": [
+    "api": {
+      "ufreportingapp": [
+        "Query",
+        "Mutation",
+        "Subscription"
+      ]
+    },
+    "auth": {
+      "ufreportingappd0135ed6": [
         "create",
         "read",
         "update",
         "delete"
       ]
     },
-    "api": {
-      "ufreportingapp": [
-        "Query",
-        "Mutation",
-        "Subscription"
+    "storage": {
+      "UFReportingTable": [
+        "create",
+        "read",
+        "update",
+        "delete"
       ]
     }
   },

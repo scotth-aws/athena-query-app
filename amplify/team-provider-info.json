@@ -18,7 +18,7 @@
       "function": {
         "UFReportingCreateReport": {
           "deploymentBucketName": "amplify-ufreportingapp-dev-85542-deployment",
-          "s3Key": "amplify-builds/UFReportingCreateReport-384f6f4e6b5759533346-build.zip",
+          "s3Key": "amplify-builds/UFReportingCreateReport-7875686c57337a323436-build.zip",
           "athenaOutputBucket": "s3://scotthoutput"
         }
       },

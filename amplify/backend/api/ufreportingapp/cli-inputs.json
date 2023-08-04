@@ -4,7 +4,7 @@
     "apiName": "ufreportingapp",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "API_KEY",
+      "mode": "AMAZON_COGNITO_USER_POOLS",
       "cognitoUserPoolId": "authufreportingappd0135ed6"
     },
     "conflictResolution": {},

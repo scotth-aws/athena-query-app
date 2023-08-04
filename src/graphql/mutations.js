@@ -25,18 +25,15 @@ export const updateReport = /* GraphQL */ `
     $condition: ModelReportConditionInput
   ) {
     updateReport(input: $input, condition: $condition) {
-       
       id
-      createdAt
-      outputLocation
-      resultSummary
       query
       name
       description
-
-      
-      
-      
+      result
+      resultSummary
+      outputLocation
+      createdAt
+      updatedAt
     }
   }
 `;
