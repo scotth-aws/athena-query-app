@@ -2,5 +2,11 @@
   "AppSyncApiName": "ufreportingapp",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false,
-  "AuthModeLastUpdated": "2023-04-13T18:21:26.431Z"
+  "AuthModeLastUpdated": "2023-08-04T15:32:40.314Z",
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authufreportingappd0135ed6",
+      "Outputs.UserPoolId"
+    ]
+  }
 }

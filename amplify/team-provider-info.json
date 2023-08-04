@@ -26,7 +26,8 @@
         "UFReportingTable": {}
       },
       "auth": {
-        "ufreportingappd0135ed6": {}
+        "ufreportingappd0135ed6": {},
+        "userPoolGroups": {}
       }
     }
   }

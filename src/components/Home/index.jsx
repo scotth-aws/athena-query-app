@@ -385,7 +385,7 @@ function Home() {
       setIsLoading(false);
     }
   }, []);
-  const [lnavopen, setLnavopen] = useState(false);
+  const [lnavopen, setLnavopen] = useState(true);
   const [rnavopen, setRnavopen] = useState(false);
   const navChange = (detail) => {
     setLnavopen(detail.open);
