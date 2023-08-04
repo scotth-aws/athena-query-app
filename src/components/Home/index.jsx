@@ -349,6 +349,17 @@ function Home() {
         bypassCache: false, // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
       })
         .then((user) => {
+          current_user.isLoggedIn = true;
+          current_user.username = user.username;
+          current_user.token = user.signInUserSession.idToken["jwtToken"];
+          if (process.env.NODE_ENV === 'development')
+              console.log('Auth.currentAuthenticatedUser called current user is ' + user.username);
+          if (
+              user.signInUserSession.idToken.payload["cognito:groups"] !==
+              undefined
+          )
+              current_user.isAdmin = true;
+              setUser(current_user);
           setIsLoading(false);
 
         })
