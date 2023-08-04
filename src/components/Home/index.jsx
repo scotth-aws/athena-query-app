@@ -63,14 +63,17 @@ const Content = () => {
 
 
   useEffect(() => {
-    API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
+    
+        
+        API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
 
-      //console.log('listReports ' + JSON.stringify(response.data.listReports.items));
-      var list = response.data.listReports.items;
-      list.sort((a, b) => (a.createdAt < b.createdAt) ? 1 : -1)
-      setReports(list);
+          //console.log('listReports ' + JSON.stringify(response.data.listReports.items));
+          var list = response.data.listReports.items;
+          list.sort((a, b) => (a.createdAt < b.createdAt) ? 1 : -1)
+          setReports(list);
 
-    })
+        });
+      
     /*
     API.graphql({
         query: onCreateHackathonLectureSummary,
@@ -123,7 +126,7 @@ const Content = () => {
   };
 
   const getCsvReport = async (event) => {
-    
+
     console.log('Downloading . . .' + JSON.stringify(selectedItems[0]));
     var n = selectedItems[0].outputLocation.lastIndexOf('/');
     var reportObject = selectedItems[0].outputLocation.substring(n + 1);
@@ -145,10 +148,10 @@ const Content = () => {
       console.log(result);
       setDownloadSignedUrl(result);
       setLinkText('Get Signed URL');
-     
+
     } catch (err) {
       console.log('get error ' + err);
-  
+
     }
 
   };
@@ -308,8 +311,8 @@ const Content = () => {
           <div><TextContent>{description} {selectedItems[0].description}</TextContent></div>
           <div><TextContent>{summary} {selectedItems[0].resultSummary}</TextContent></div>
           <div><TextContent>{query} {selectedItems[0].query}</TextContent></div>
-        
-            <div><Link  onFollow={() =>   setLinkText('')      } external href={downloadSignedUrl}>{linkText}</Link></div>
+
+          <div><Link onFollow={() => setLinkText('')} external href={downloadSignedUrl}>{linkText}</Link></div>
 
         </ColumnLayout>
 
@@ -353,13 +356,13 @@ function Home() {
           current_user.username = user.username;
           current_user.token = user.signInUserSession.idToken["jwtToken"];
           if (process.env.NODE_ENV === 'development')
-              console.log('Auth.currentAuthenticatedUser called current user is ' + user.username);
+            console.log('Auth.currentAuthenticatedUser called current user is ' + user.username);
           if (
-              user.signInUserSession.idToken.payload["cognito:groups"] !==
-              undefined
+            user.signInUserSession.idToken.payload["cognito:groups"] !==
+            undefined
           )
-              current_user.isAdmin = true;
-              setUser(current_user);
+            current_user.isAdmin = true;
+          setUser(current_user);
           setIsLoading(false);
 
         })
