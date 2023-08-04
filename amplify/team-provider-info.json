@@ -24,6 +24,9 @@
       },
       "storage": {
         "UFReportingTable": {}
+      },
+      "auth": {
+        "ufreportingappd0135ed6": {}
       }
     }
   }

@@ -6,6 +6,17 @@ export type AmplifyDependentResourcesAttributes = {
       "GraphQLAPIKeyOutput": "string"
     }
   },
+  "auth": {
+    "ufreportingappd0135ed6": {
+      "AppClientID": "string",
+      "AppClientIDWeb": "string",
+      "IdentityPoolId": "string",
+      "IdentityPoolName": "string",
+      "UserPoolArn": "string",
+      "UserPoolId": "string",
+      "UserPoolName": "string"
+    }
+  },
   "function": {
     "UFReportingCreateReport": {
       "Arn": "string",

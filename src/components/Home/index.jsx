@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
-//import { withAuthenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 import {
   AppLayout,
@@ -17,29 +16,46 @@ import {
   Cards,
   ColumnLayout,
   Link,
-  Grid
+  Grid,
+  Container
 
 } from "@cloudscape-design/components";
 //import { appLayoutLabels } from "../labels";
+import { withAuthenticator } from "@aws-amplify/ui-react";
 import Navigation from "../Navigation";
 import {
   Logger,
   Auth,
   API,
   graphqlOperation,
+  Storage
 
 } from "aws-amplify";
 import { listReports } from "../../graphql/queries";
+
+Storage.configure({
+  AWSS3: {
+    bucket: 'scotthoutput',
+    region: 'us-east-1',
+    level: "public",
+    customPrefix: {
+      public: "",
+    },
+  },
+});
 
 const Content = () => {
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [selectedItems, setSelectedItems] = React.useState([{ name: "" }]);
   const [selectedItemsOutputs, setSelectedItemsOutputs] = React.useState([]);
   const [reports, setReports] = React.useState([]);
-  const [description,setDescription] = React.useState("");
-  const [summary,setSummary] = React.useState("");
-  const [query,setQuery] = React.useState("");
-  const [downloadReport,setDownloadReport] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [summary, setSummary] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const [downloadReport, setDownloadReport] = React.useState("");
+  const [downloadSignedUrl, setDownloadSignedUrl] = React.useState("");
+  const [linkText, setLinkText] = React.useState("");
+  const [buttonDisabled, setButtonDisabled] = React.useState(true);
 
   const [pagesCount, setPagesCount] = React.useState(
     Math.ceil(reports.length / 5)
@@ -49,8 +65,10 @@ const Content = () => {
   useEffect(() => {
     API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
 
-      console.log('listReports ' + JSON.stringify(response.data.listReports.items));
-      setReports(response.data.listReports.items);
+      //console.log('listReports ' + JSON.stringify(response.data.listReports.items));
+      var list = response.data.listReports.items;
+      list.sort((a, b) => (a.createdAt < b.createdAt) ? 1 : -1)
+      setReports(list);
 
     })
     /*
@@ -75,19 +93,20 @@ const Content = () => {
     */
   }, []);
 
-  //console.log('about to render ' + JSON.stringify(reports));
+
 
   function convertEpochToSpecificTimezone(timeEpoch, offset) {
     //Convert epoch to human readable date
     var myDate = new Date(timeEpoch * 1000);
     var hr = myDate.toGMTString();
-    console.log(' human readable ' + hr)
+    //console.log(' human readable ' + hr)
     return hr;
   }
   const selectionChangeButton = (detail) => {
+    setButtonDisabled(false);
     setSummary('Summary : ');
     setDescription('Description : ')
-    setDownloadReport('Download Report: ');
+    setDownloadReport('Get Signed URL : ');
     setQuery('Executed Query: ');
     setSelectedItems(detail.selectedItems);
     if (detail.selectedItems.length !== 0) {
@@ -97,8 +116,39 @@ const Content = () => {
     } else {
       console.log("selectionChangeButton HIT " + JSON.stringify(detail.selectedItems));
       setSelectedItems(detail.selectedItems);
-    
 
+
+    }
+
+  };
+
+  const getCsvReport = async (event) => {
+    
+    console.log('Downloading . . .' + JSON.stringify(selectedItems[0]));
+    var n = selectedItems[0].outputLocation.lastIndexOf('/');
+    var reportObject = selectedItems[0].outputLocation.substring(n + 1);
+    try {
+      const result = await Storage.get(reportObject, {
+        bucket: 'scotthoutput', download: false,
+        progressCallback(progress) {
+          console.log(`Downloaded: ${progress.loaded}/${progress.total}`);
+          //setProgressBarValue((progress.loaded / progress.total) * 100);
+        },
+      });
+
+      // data.Body is a Blob
+      //result.Body.text().then((string) => {
+      // handle the String data return String
+      //console.log('s3 body ' + string);
+      //setSummaryOutput(string);
+      //});
+      console.log(result);
+      setDownloadSignedUrl(result);
+      setLinkText('Get Signed URL');
+     
+    } catch (err) {
+      console.log('get error ' + err);
+  
     }
 
   };
@@ -139,11 +189,12 @@ const Content = () => {
             cell: e => e.name,
             sortingField: "alt"
           }
-         
+
         ]}
         items={reports}
         loadingText="Loading resources"
         selectionType="single"
+        sortingDescending
         trackBy="id"
         visibleColumns={[
           "createdAt",
@@ -165,15 +216,18 @@ const Content = () => {
         }
 
         header={
-          <Header
-            counter={
-              selectedItems.length
-                ? "(" + selectedItems.length + "/10)"
-                : "(10)"
-            }
-          >
-            Completed Reports
-          </Header>
+          <ColumnLayout columns={2}>
+            <Header
+              counter={
+                selectedItems.length
+                  ? "(" + selectedItems.length + "/10)"
+                  : "(10)"
+              }
+            >
+              Completed Reports
+            </Header>
+            <Button disabled={buttonDisabled} onClick={(event) => getCsvReport(event)}>Download</Button>
+          </ColumnLayout>
         }
         pagination={
           <Pagination
@@ -200,7 +254,7 @@ const Content = () => {
               visibleContent: [
                 "createdAt",
                 "name"
-              
+
               ]
             }}
             pageSizePreference={{
@@ -237,8 +291,8 @@ const Content = () => {
                       editable: false
                     },
                     { id: "name", label: "Name", editable: false },
-                  
-                   
+
+
                   ]
                 }
               ]
@@ -249,15 +303,17 @@ const Content = () => {
       <div className="container">
 
 
-    <ColumnLayout columns={1}>
-    
-      <div><TextContent>{description} {selectedItems[0].description}</TextContent></div>
-      <div><TextContent>{summary} {selectedItems[0].resultSummary}</TextContent></div>
-      <div><TextContent>{query} {selectedItems[0].query}</TextContent></div>
-      <div><Link>{downloadReport} {selectedItems[0].outputLocation}</Link></div>
-    </ColumnLayout>
- 
-      
+        <ColumnLayout columns={1}>
+
+          <div><TextContent>{description} {selectedItems[0].description}</TextContent></div>
+          <div><TextContent>{summary} {selectedItems[0].resultSummary}</TextContent></div>
+          <div><TextContent>{query} {selectedItems[0].query}</TextContent></div>
+        
+            <div><Link  onFollow={() =>   setLinkText('')      } external href={downloadSignedUrl}>{linkText}</Link></div>
+
+        </ColumnLayout>
+
+
 
 
       </div>
@@ -277,6 +333,7 @@ function Home() {
 
   //console.log("User " + JSON.stringify(User));
   const [User, setUser] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     let current_user = {};
     try {
@@ -287,25 +344,31 @@ function Home() {
         username: "",
         token: "",
       };
+      // get the current authenticated user object
+      Auth.currentAuthenticatedUser({
+        bypassCache: false, // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
+      })
+        .then((user) => {
+          setIsLoading(false);
 
+        })
+        .catch(
+          (err) => {
+            setIsLoading(false);
+            if (process.env.NODE_ENV === 'development')
+              console.log("Home -> index.jsx - Auth error " + JSON.stringify(err), Date.now())
 
-      /*
-            API.graphql(graphqlOperation(listReports, {})).then((response, error) => {
-      
-              console.log('listReports ' + JSON.stringify(response.data.listReports.items));
-              setItems(response.data.listReports.items);
-      
-            })
-            */
-
+          });
 
 
     } catch (e) {
       console.log("setUser Error");
       setUser(current_user);
+      setIsLoading(false);
 
     } finally {
       console.log("finally ");
+      setIsLoading(false);
     }
   }, []);
   const [lnavopen, setLnavopen] = useState(false);
@@ -316,19 +379,27 @@ function Home() {
   const toolsChange = (detail) => {
     setRnavopen(detail.open);
   };
-  return (
-    <AppLayout
-      disableContentPaddings={false}
-      navigation={<Navigation User={User} />}
-      content={<Content />}
-      contentType="default"
-      toolsOpen={rnavopen}
-      //toolsWidth={350}
-      tools={<SideHelp />}
-      navigationOpen={lnavopen}
-      onNavigationChange={({ detail }) => navChange(detail)}
-      onToolsChange={({ detail }) => toolsChange(detail)}
-    />
-  );
+  if (!isLoading) {
+    return (
+      <AppLayout
+        disableContentPaddings={false}
+        navigation={<Navigation User={User} />}
+        content={<Content User={User} />}
+        contentType="default"
+        toolsOpen={rnavopen}
+        //toolsWidth={350}
+        tools={<SideHelp />}
+        navigationOpen={lnavopen}
+        onNavigationChange={({ detail }) => navChange(detail)}
+        onToolsChange={({ detail }) => toolsChange(detail)}
+      />
+    );
+  } else {
+    return (
+      <Container>
+        <TextContent>Loading . . . </TextContent>
+      </Container>
+    );
+  }
 }
-export default Home;
+export default withAuthenticator(Home);
