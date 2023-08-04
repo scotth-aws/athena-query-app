@@ -14,7 +14,10 @@ import {
   Table,
   Pagination,
   CollectionPreferences,
-  Cards
+  Cards,
+  ColumnLayout,
+  Link,
+  Grid
 
 } from "@cloudscape-design/components";
 //import { appLayoutLabels } from "../labels";
@@ -33,6 +36,11 @@ const Content = () => {
   const [selectedItems, setSelectedItems] = React.useState([{ name: "" }]);
   const [selectedItemsOutputs, setSelectedItemsOutputs] = React.useState([]);
   const [reports, setReports] = React.useState([]);
+  const [description,setDescription] = React.useState("");
+  const [summary,setSummary] = React.useState("");
+  const [query,setQuery] = React.useState("");
+  const [downloadReport,setDownloadReport] = React.useState("");
+
   const [pagesCount, setPagesCount] = React.useState(
     Math.ceil(reports.length / 5)
   );
@@ -69,16 +77,27 @@ const Content = () => {
 
   //console.log('about to render ' + JSON.stringify(reports));
 
+  function convertEpochToSpecificTimezone(timeEpoch, offset) {
+    //Convert epoch to human readable date
+    var myDate = new Date(timeEpoch * 1000);
+    var hr = myDate.toGMTString();
+    console.log(' human readable ' + hr)
+    return hr;
+  }
   const selectionChangeButton = (detail) => {
-   
-      console.log("selectionChangeButton HIT " + JSON.stringify(detail.selectedItems));
+    setSummary('Summary : ');
+    setDescription('Description : ')
+    setDownloadReport('Download Report: ');
+    setQuery('Executed Query: ');
     setSelectedItems(detail.selectedItems);
-    if (detail.selectedItems.length === 0) {
-     
+    if (detail.selectedItems.length !== 0) {
       //setSelectedItemsOutputs([]);
-      setSelectedItems(detail.selectedItems);
+      //setSelectedItems(detail.selectedItems);
       return;
     } else {
+      console.log("selectionChangeButton HIT " + JSON.stringify(detail.selectedItems));
+      setSelectedItems(detail.selectedItems);
+    
 
     }
 
@@ -91,7 +110,7 @@ const Content = () => {
       <Table
         onSelectionChange={({ detail }) =>
 
-        selectionChangeButton(detail)
+          selectionChangeButton(detail)
         }
         selectedItems={selectedItems}
         ariaLabels={{
@@ -101,38 +120,33 @@ const Content = () => {
             } selected`,
           itemSelectionLabel: ({ selectedItems }, item) => {
             const isItemSelected = selectedItems.filter(
-              i => i.id === item.id
+              i => i.createdAt === item.createdAt
             ).length;
-            return `${item.id} is ${isItemSelected ? "" : "not"
+            return `${item.createdAt} is ${isItemSelected ? "" : "not"
               } selected`;
           }
         }}
         columnDefinitions={[
           {
-            id: "id",
-            header: "Id",
-            cell: e => e.id,
-            sortingField: "id"
+            id: "createdAt",
+            header: "Date Created",
+            cell: e => convertEpochToSpecificTimezone(e.createdAt),
+            sortingField: "createdAt"
           },
           {
             id: "name",
             header: "Report Name",
             cell: e => e.name,
             sortingField: "alt"
-          },
-          { id: "outputLocation", header: "Report Location", cell: e => e.outputLocation },
-          {
-            id: "description",
-            header: "Description",
-            cell: e => e.description
           }
+         
         ]}
         items={reports}
         loadingText="Loading resources"
         selectionType="single"
         trackBy="id"
         visibleColumns={[
-          "id",
+          "createdAt",
           "name",
           "outputLocation"
         ]}
@@ -184,9 +198,9 @@ const Content = () => {
             preferences={{
               pageSize: 10,
               visibleContent: [
-                "id",
-                "name",
-                "outputLocation"
+                "createdAt",
+                "name"
+              
               ]
             }}
             pageSizePreference={{
@@ -218,16 +232,13 @@ const Content = () => {
                   label: "Main distribution properties",
                   options: [
                     {
-                      id: "id",
-                      label: "I",
+                      id: "createdAt",
+                      label: "Date Created",
                       editable: false
                     },
                     { id: "name", label: "Name", editable: false },
-                    { id: "outputLocation", label: "Report Location", editable: false },
-                    {
-                      id: "description",
-                      label: "Description"
-                    }
+                  
+                   
                   ]
                 }
               ]
@@ -235,41 +246,18 @@ const Content = () => {
           />
         }
       />
-      <div className="outputContainer">
-
-        <Cards
-          cardDefinition={{
-            sections: [
-              {
-                id: "outputs",
-                content: (item) =>
-                  item.lectureTitle.substring(1, 4) !== "ttp" ? (
-                    <React.Fragment>
-                      <TextContent>{item.name}</TextContent>
+      <div className="container">
 
 
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <TextContent>{item.name}</TextContent>
-
-                    </React.Fragment>
-                  ),
-              },
-            ],
-          }}
-          cardsPerRow={[{ cards: 1 }, { minWidth: 300, cards: 2 }]}
-          items={selectedItemsOutputs}
-          loadingText="Loading resources"
-          empty={
-            <Box textAlign="center" color="inherit">
-              <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-             
-              </Box>
-            </Box>
-          }
-          header={<Header variant="h2" description="">Summary Output</Header>}
-        />
+    <ColumnLayout columns={1}>
+    
+      <div><TextContent>{description} {selectedItems[0].description}</TextContent></div>
+      <div><TextContent>{summary} {selectedItems[0].resultSummary}</TextContent></div>
+      <div><TextContent>{query} {selectedItems[0].query}</TextContent></div>
+      <div><Link>{downloadReport} {selectedItems[0].outputLocation}</Link></div>
+    </ColumnLayout>
+ 
+      
 
 
       </div>
