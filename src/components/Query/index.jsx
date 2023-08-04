@@ -83,8 +83,10 @@ const Content = (user) => {
       description = 'A report on all variants where ClinVar annotations are likely_pathogenic or pathogenic';
       name = "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic";
     }
+    console.log('name '+name);
+    console.log('description '+description);
     try {
-      var qinput = { input: { name: name, description: description, query: "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 10", createdAt: 1691074526 } }
+      var qinput = { input: { id: "",name: name, description: description, query: "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 10", createdAt: 1691074526 } }
       API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
 
         console.log('createReport ' + JSON.stringify(response.data));

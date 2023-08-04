@@ -15,7 +15,6 @@ export const createReport = /* GraphQL */ `
       resultSummary
       outputLocation
       createdAt
-      updatedAt
     }
   }
 `;
