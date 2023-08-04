@@ -238,7 +238,7 @@ type Report {
 	resultSummary: String
 	outputLocation: String
 	createdAt: Int
-	updatedAt: Int!
+	updatedAt: Int
 }
 
 input UpdateReportInput {
