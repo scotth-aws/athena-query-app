@@ -15,6 +15,9 @@ export const createReport = /* GraphQL */ `
       resultSummary
       outputLocation
       createdAt
+      updatedAt
+      queryState
+      queryError
     }
   }
 `;
@@ -33,6 +36,8 @@ export const updateReport = /* GraphQL */ `
       outputLocation
       createdAt
       updatedAt
+      queryState
+      queryError
     }
   }
 `;
@@ -51,6 +56,8 @@ export const deleteReport = /* GraphQL */ `
       outputLocation
       createdAt
       updatedAt
+      queryState
+      queryError
     }
   }
 `;

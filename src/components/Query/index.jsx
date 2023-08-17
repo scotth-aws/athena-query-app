@@ -76,16 +76,16 @@ const Content = (user) => {
     var query = "";
     if (selectValue.value === '1') {
       description = 'A report on all variants';
-      name = "List of all variant genes and coordinates";
+      name = "All variant genes and coordinates";
       query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
     } else if (selectValue.value === '2') {
-      description = 'A report on all variants where CADD score >=2';
-      name = "List of all variant genes and coordinates where CADD score >=20";
-      query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
+      description = 'A report on all variant genes and coordinates where CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign';
+      name = "CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign";
+      query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN \"uf_genomics_reporting\".\"revel38\" AS a  ON v.variant_id = a.variant_id JOIN uf_genomics_reporting.clinvar as clin on a.variant_id = clin.variant_id WHERE a.revel >= 0.4  AND (clin.clinicalsignificance ='Benign' OR clin.clinicalsignificance = 'Likely benign') limit 100";
     } else {
-      description = 'A report on all variants where ClinVar annotations are likely_pathogenic or pathogenic';
-      name = "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic";
-      query = "SELECT count(*) FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (a.clinicalsignificance='Pathogenic'  OR a.clinicalsignificance = 'Likely pathogenic') ";
+      description = 'A report on all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic';
+      name = "ClinVar annotations are likely_pathogenic or pathogenic";
+      query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (a.clinicalsignificance='Pathogenic'  OR a.clinicalsignificance = 'Likely pathogenic') limit 100 ";
     }
     console.log('name '+name);
     console.log('description '+description);
@@ -152,15 +152,15 @@ const Content = (user) => {
                 <Select
                   options={[
                     {
-                      label: "List of all variant genes and coordinates",
+                      label: "All variant genes and coordinates",
                       value: "1",
                     },
                     {
-                      label: "List of all variant genes and coordinates where CADD score >=20",
+                      label: "CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign",
                       value: "2",
                     },
                     {
-                      label: "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic",
+                      label: "ClinVar annotations are likely_pathogenic or pathogenic",
                       value: "3",
                     }
 

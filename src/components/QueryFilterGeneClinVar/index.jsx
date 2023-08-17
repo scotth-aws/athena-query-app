@@ -24,6 +24,7 @@ import {
   Link,
   SpaceBetween,
   Modal,
+  Multiselect,
 } from "@cloudscape-design/components";
 //import { appLayoutLabels, itemSelectionLabels } from "../labels";
 import Navigation from "../Navigation";
@@ -33,6 +34,66 @@ import awsconfig from "../../aws-exports";
 const logger = new Logger("erdLogger", "DEBUG");
 
 Amplify.configure(awsconfig);
+
+const clinsig = [
+  {
+    label: "Pathogenic",
+    options: [
+      {
+        label: "Pathogenic; drug response",
+        value: "1",
+        description: ""
+      },
+      {
+        label: "Pathogenic/Likely risk allele",
+        value: "2",
+        description: ""
+      },
+      {
+        label: "Pathogenic; risk factor",
+        value: "3",
+        description: ""
+      },
+      {
+        label: "Likely pathogenic; other",
+        value: "4",
+        description: ""
+      }
+
+    ]
+  },
+  {
+    label: "Benign",
+    options: [
+      {
+        label: "Benign; risk factor",
+        value: "5",
+        description: ""
+      },
+      {
+        label: "Benign/Likely benign; association",
+        value: "6",
+        description: ""
+
+      }
+    ]
+  },
+  {
+    label: "Uncertain",
+    options: [
+      {
+        label: "Uncertain significance; risk factor",
+        value: "7",
+        description: ""
+      },
+      {
+        label: "Uncertain risk allele; protective",
+        value: "8",
+        description: ""
+      }
+    ]
+  }
+]
 
 const Content = (user) => {
   //console.log("Content username " + JSON.stringify(user));
@@ -48,6 +109,13 @@ const Content = (user) => {
   const [outputs, setOutputs] = useState("");
   var [alertDismissible, setAlertDismissible] = useState(false);
   var [alertSuccess, setAlertSuccess] = useState("success");
+  var [selectedClinvarOptions, setSelectedClinvarOptions] = React.useState([
+    {
+      label: "Pathogenic",
+      value: "1",
+      description: ""
+    }
+  ]);
 
   var [deploymentHeader, setDeploymentHeader] = useState(
     "Report Generation In Progress, this may take a few minutes"
@@ -69,8 +137,14 @@ const Content = (user) => {
     navigate("/");
 
   };
+  const clinvarSelection = (details) => {
+    console.log('detail ' + JSON.stringify(details));
+    setSelectedClinvarOptions(details.detail.selectedOptions)
+ 
+
+  };
   const submitFormHandler = (event, selectValue) => {
-    console.log('selectValue ' + JSON.stringify(selectValue));
+    console.log('submitFormHandler selectValue ' + JSON.stringify(selectValue)+ '  '+JSON.stringify(selectedClinvarOptions)+' ' +JSON.stringify(selectGeneValue));
     setDisabled(true);
     setAlertSuccess("success");
     setAlert("Report Generation: \"IN_PROGRESS\"");
@@ -78,6 +152,7 @@ const Content = (user) => {
     var description = "";
     var name = "";
     var query = "";
+    /*
     if (selectValue.value === '1') {
       description = 'A report on all variants';
       name = "List of all variant genes and coordinates";
@@ -91,10 +166,14 @@ const Content = (user) => {
       name = "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic";
       query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
     }
-    console.log('name '+name);
-    console.log('description '+description);
+    */
+    description = 'A report on all variants';
+    name = "List of all variant genes and coordinates";
+    query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
+    console.log('name ' + name);
+    console.log('description ' + description);
     try {
-      var qinput = { input: { id: "",name: name, description: description, query: query, createdAt: 1691074526 } }
+      var qinput = { input: { id: "", name: name, description: description, query: query, createdAt: 1691074526 } }
       API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
 
         console.log('createReport ' + JSON.stringify(response.data));
@@ -282,8 +361,27 @@ const Content = (user) => {
               </FormField>
             </SpaceBetween>
 
+            <SpaceBetween direction="vertical" size="s">
+              <FormField
+                label="Select Clinvar Options"
+                errorText={!selectValue && "Select Clinvar Options"}
+              >
+                <TextContent></TextContent>
+
+                <Multiselect
+                  selectedOptions={selectedClinvarOptions}
+                  onChange={(details) =>
+                   clinvarSelection(details)
+                  }
+                  options={clinsig}
+                  placeholder="Choose options"
+                />
+              </FormField>
+            </SpaceBetween>
+
 
             <SpaceBetween direction="vertical" size="s">
+            <TextContent></TextContent>
               <Link
                 external
                 variant="primary"

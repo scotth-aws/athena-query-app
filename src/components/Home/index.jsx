@@ -127,6 +127,12 @@ const Content = () => {
 
   const getCsvReport = async (event) => {
 
+    if (selectedItems[0].queryState !== 'SUCCEEDED') {
+      alert('This report failed, check the Summary to find details');
+      return;
+    
+    }
+
     console.log('Downloading . . .' + JSON.stringify(selectedItems[0]));
     var n = selectedItems[0].outputLocation.lastIndexOf('/');
     var reportObject = selectedItems[0].outputLocation.substring(n + 1);
@@ -187,6 +193,12 @@ const Content = () => {
             sortingField: "createdAt"
           },
           {
+            id: "queryState",
+            header: "Report Status",
+            cell: e => e.queryState,
+            sortingField: "alt"
+          },
+          {
             id: "name",
             header: "Report Name",
             cell: e => e.name,
@@ -202,6 +214,7 @@ const Content = () => {
         visibleColumns={[
           "createdAt",
           "name",
+          "queryState",
           "outputLocation"
         ]}
         empty={

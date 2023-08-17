@@ -6,7 +6,9 @@ input CreateReportInput {
 	description: String
     result: String
 	resultSummary: String
-	outputLocation: String
+	outputLocation: String,
+	queryState: String,
+    queryError: String
 }
 
 input DeleteReportInput {
@@ -239,6 +241,8 @@ type Report {
 	outputLocation: String
 	createdAt: Int
 	updatedAt: Int
+	queryState: String,
+    queryError: String
 }
 
 input UpdateReportInput {
@@ -250,4 +254,6 @@ input UpdateReportInput {
 	resultSummary: String
 	outputLocation: String
 	description: String
+	queryState: String,
+    queryError: String
 }

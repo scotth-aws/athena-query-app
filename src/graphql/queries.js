@@ -13,6 +13,8 @@ export const getReport = /* GraphQL */ `
       outputLocation
       createdAt
       updatedAt
+      queryState
+      queryError
     }
   }
 `;
@@ -33,6 +35,8 @@ export const listReports = /* GraphQL */ `
         outputLocation
         createdAt
         updatedAt
+        queryState
+        queryError
       }
       nextToken
     }

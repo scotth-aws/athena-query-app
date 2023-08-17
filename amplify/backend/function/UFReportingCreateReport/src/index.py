@@ -52,12 +52,12 @@ def execute_query_async(query):
 
         print('execute_query_async ',df)
         acursor.close()
-        return df,result_summary,output_location
+        return df,result_summary,output_location,result_set
 
     else:
-        print('execute_query_async ',result_set.state)
+        print('result set error_category',result_set.error_category, 'result set error_type',result_set.error_type,'result set error_message',result_set.error_message )
         acursor.close()
-        return df,result_set.state,output_location
+        return df,result_set.state+' - '+result_set.error_message,output_location,result_set
 
 #
 #
@@ -81,7 +81,7 @@ def execute_query(query):
 #
 
 
-def update_ddb(name, description, query,result_summary, output_location):
+def update_ddb(name, description, query,result_summary, output_location,result_set):
     try:
         print('update_ddb place holder ', name)
         dynamodb = boto3.resource('dynamodb')
@@ -98,7 +98,9 @@ def update_ddb(name, description, query,result_summary, output_location):
                 'query': query,
                 'createdAt': int(epoch_time),
                 'outputLocation': output_location,
-                'resultSummary': result_summary
+                'resultSummary': result_summary,
+                'queryState': result_set.state,
+                'queryError': result_set.error_message
             }
         )
 
@@ -146,11 +148,11 @@ def handler(event, context):
     query = event['arguments']['input']['query']
     #result = cursor.execute(query)
     #df = as_pandas(cursor)
-    df, result_summary, output_location = execute_query_async(query)
+    df, result_summary, output_location, result_set = execute_query_async(query)
     #response = {'id': '1','result': json.loads(df.to_json(orient = 'records')),'resultSummary': result_summary, 'outputLocation': output_location}
     
     #print('df ', df)
     #print('summary ', result_summary)
-    response = update_ddb(name, description, query, result_summary, output_location)
+    response = update_ddb(name, description, query, result_summary, output_location, result_set)
     print('response ', response)
     return response
