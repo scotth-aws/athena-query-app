@@ -33,6 +33,8 @@ def execute_query_async(query):
         QueuingTime(s): {}'''
 
     df = None
+    result_set = None
+    output_location = None
     acursor = conn.cursor(AsyncCursor)
     query_id, future = acursor.execute(query)
     result_set = future.result()
@@ -48,9 +50,14 @@ def execute_query_async(query):
         cols = [x[0] for x in result_set.description]
         df = pd.DataFrame(rows, columns=cols)
 
-    acursor.close()
-    print('execute_query_async ', df)
-    return df, result_summary, output_location
+        print('execute_query_async ',df)
+        acursor.close()
+        return df,result_summary,output_location
+
+    else:
+        print('execute_query_async ',result_set.state)
+        acursor.close()
+        return df,result_set.state,output_location
 
 #
 #

@@ -54,7 +54,11 @@ const Content = (user) => {
   );
   const [visible, setVisible] = React.useState(false);
   const [selectValue, setSelectValue] = useState({
-    label: "List of all variant genes and coordinates",
+    label: "Sample Variants from Johnny B",
+    value: "1",
+  });
+  const [selectGeneValue, setSelectGeneValue] = useState({
+    label: "1",
     value: "1",
   });
   var [modalStatus, setModalStatus] = useState("MODAL_IN_PROGRESS");
@@ -85,7 +89,7 @@ const Content = (user) => {
     } else {
       description = 'A report on all variants where ClinVar annotations are likely_pathogenic or pathogenic';
       name = "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic";
-      query = "SELECT count(*) FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (a.clinicalsignificance='Pathogenic'  OR a.clinicalsignificance = 'Likely pathogenic') ";
+      query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
     }
     console.log('name '+name);
     console.log('description '+description);
@@ -144,24 +148,20 @@ const Content = (user) => {
           >
             <SpaceBetween direction="vertical" size="s">
               <FormField
-                label="Select Report and hit Submit"
-                errorText={!selectValue && "Select Report"}
+                label="Select Variants Table"
+                errorText={!selectValue && "Select Variants Table"}
               >
                 <TextContent></TextContent>
 
                 <Select
                   options={[
                     {
-                      label: "List of all variant genes and coordinates",
+                      label: "Sample Variants from Johnny B",
                       value: "1",
                     },
                     {
-                      label: "List of all variant genes and coordinates where CADD score >=20",
+                      label: "Some other Variant table from Rui",
                       value: "2",
-                    },
-                    {
-                      label: "List of all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic",
-                      value: "3",
                     }
 
                   ]}
@@ -173,6 +173,115 @@ const Content = (user) => {
                 />
               </FormField>
             </SpaceBetween>
+
+            <SpaceBetween direction="vertical" size="s">
+              <FormField
+                label="Select Gene"
+                errorText={!selectValue && "Select Gene"}
+              >
+                <TextContent></TextContent>
+
+                <Select
+                  options={[
+                    {
+                      label: "1",
+                      value: "1",
+                    },
+                    {
+                      label: "2",
+                      value: "2",
+                    },
+                    {
+                      label: "3",
+                      value: "3",
+                    },
+                    {
+                      label: "4",
+                      value: "4",
+                    },
+                    {
+                      label: "5",
+                      value: "5",
+                    },
+                    {
+                      label: "6",
+                      value: "6",
+                    },
+                    {
+                      label: "7",
+                      value: "7",
+                    },
+                    {
+                      label: "8",
+                      value: "8",
+                    },
+                    {
+                      label: "9",
+                      value: "9",
+                    },
+                    {
+                      label: "10",
+                      value: "10",
+                    },
+                    {
+                      label: "11",
+                      value: "11",
+                    },
+                    {
+                      label: "12",
+                      value: "12",
+                    },
+                    {
+                      label: "13",
+                      value: "13",
+                    },
+                    {
+                      label: "14",
+                      value: "14",
+                    },
+                    {
+                      label: "15",
+                      value: "15",
+                    },
+                    {
+                      label: "16",
+                      value: "16",
+                    },
+                    {
+                      label: "17",
+                      value: "17",
+                    },
+                    {
+                      label: "18",
+                      value: "18",
+                    },
+                    {
+                      label: "19",
+                      value: "19",
+                    },
+                    {
+                      label: "20",
+                      value: "20",
+                    },
+                    {
+                      label: "21",
+                      value: "21",
+                    },
+                    {
+                      label: "22",
+                      value: "22",
+                    },
+
+                  ]}
+                  selectedOption={selectGeneValue}
+                  onChange={(event) =>
+                    setSelectGeneValue(event.detail.selectedOption)
+                  }
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+            </SpaceBetween>
+
 
             <SpaceBetween direction="vertical" size="s">
               <Link
@@ -225,7 +334,7 @@ const SideHelp = () => (
   </HelpPanel>
 );
 
-function Query() {
+function QueryFilterGeneClinVar() {
   const [User, setUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -310,4 +419,4 @@ function Query() {
 }
 
 
-export default withAuthenticator(Query);;
+export default withAuthenticator(QueryFilterGeneClinVar);;

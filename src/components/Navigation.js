@@ -46,7 +46,8 @@ const Navigation = (current_user) => {
             expanded: true,
             items: [
 
-                { type: "link", text: "Variant Reports by Filter", href: "/Query" }
+                { type: "link", text: "Top 3 Variant Reports", href: "/Query" },
+                { type: "link", text: "Filtered Variant Reports by Genes and ClinVar", href: "QueryFilterGeneClinVar" }
 
             ]
         });
