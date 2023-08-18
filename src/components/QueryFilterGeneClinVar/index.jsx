@@ -140,11 +140,12 @@ const Content = (user) => {
   const clinvarSelection = (details) => {
     console.log('detail ' + JSON.stringify(details));
     setSelectedClinvarOptions(details.detail.selectedOptions)
- 
+
 
   };
   const submitFormHandler = (event, selectValue) => {
-    console.log('submitFormHandler selectValue ' + JSON.stringify(selectValue)+ '  '+JSON.stringify(selectedClinvarOptions)+' ' +JSON.stringify(selectGeneValue));
+
+    console.log('submitFormHandler selectValue ' + JSON.stringify(selectValue) + '  ' + JSON.stringify(selectedClinvarOptions) + ' ' + JSON.stringify(selectGeneValue));
     setDisabled(true);
     setAlertSuccess("success");
     setAlert("Report Generation: \"IN_PROGRESS\"");
@@ -167,29 +168,42 @@ const Content = (user) => {
       query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
     }
     */
-    description = 'A report on all variants';
-    name = "List of all variant genes and coordinates";
-    query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
-    console.log('name ' + name);
-    console.log('description ' + description);
-    try {
-      var qinput = { input: { id: "", name: name, description: description, query: query, createdAt: 1691074526 } }
-      API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
+    var clinvarSigs = '';
+    var clinvarPredicate = ''
+    for (var i = 0; i < selectedClinvarOptions.length; i++) {
+      clinvarSigs = clinvarSigs + selectedClinvarOptions[i].label;
+      clinvarPredicate = clinvarPredicate + "a.clinicalsignificance = " + "'"+selectedClinvarOptions[i].label+"'";
+      if (i < selectedClinvarOptions.length - 1) {
+        clinvarSigs = clinvarSigs + ' OR ';
+        clinvarPredicate = clinvarPredicate + ' OR ';
+      
+      }
 
-        console.log('createReport ' + JSON.stringify(response.data));
-        navigate("/");
-
-
-
-      })
-    } catch (e) {
-
-      console.log(JSON.stringify(e));
-    } finally {
-
-      console.log("finally");
 
     }
+    console.log('clinvarPredicate '+clinvarPredicate);
+    description = 'A report on all variants for specific gene and clinvar significance';
+    name = 'List of all variants where gene is ' + selectGeneValue.value + ' and clinvar significance is ' + clinvarSigs;
+    //query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
+    query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" AS v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  ("+ clinvarPredicate +") and v.chrom = '" + selectGeneValue.value + "' limit 100 ";
+
+    console.log('name ' + name);
+    console.log('description ' + description);
+
+    var qinput = { input: { id: "", name: name, description: description, query: query, createdAt: 0 } }
+    API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
+
+      console.log('createReport ' + JSON.stringify(response.data));
+      navigate("/");
+
+    }).catch((error) => {
+      console.log('error ' + JSON.stringify(error));
+      setDisabled(false);
+      setAlertSuccess("error");
+      setAlert("Report Generation: \"FAILED\"" + JSON.stringify(error));
+      setVisible(true);
+    })
+
 
 
   };
@@ -371,7 +385,7 @@ const Content = (user) => {
                 <Multiselect
                   selectedOptions={selectedClinvarOptions}
                   onChange={(details) =>
-                   clinvarSelection(details)
+                    clinvarSelection(details)
                   }
                   options={clinsig}
                   placeholder="Choose options"
@@ -381,7 +395,7 @@ const Content = (user) => {
 
 
             <SpaceBetween direction="vertical" size="s">
-            <TextContent></TextContent>
+              <TextContent></TextContent>
               <Link
                 external
                 variant="primary"

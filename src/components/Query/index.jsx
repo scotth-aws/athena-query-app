@@ -86,27 +86,27 @@ const Content = (user) => {
       description = 'A report on all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic';
       name = "ClinVar annotations are likely_pathogenic or pathogenic";
       query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (a.clinicalsignificance='Pathogenic'  OR a.clinicalsignificance = 'Likely pathogenic') limit 100 ";
+   
     }
     console.log('name '+name);
     console.log('description '+description);
-    try {
-      var qinput = { input: { id: "",name: name, description: description, query: query, createdAt: 1691074526 } }
-      API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
 
+      var qinput = { input: { id: "",name: name, description: description, query: query, createdAt: 0 } }
+      API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
+   
         console.log('createReport ' + JSON.stringify(response.data));
         navigate("/");
 
 
 
+      }).catch((error) => {
+        console.log('error ' + JSON.stringify(error));
+        setDisabled(false);
+        setAlertSuccess("error");
+        setAlert("Report Generation: \"FAILED\""+JSON.stringify(error));
+        setVisible(true);
       })
-    } catch (e) {
-
-      console.log(JSON.stringify(e));
-    } finally {
-
-      console.log("finally");
-
-    }
+     
 
 
   };

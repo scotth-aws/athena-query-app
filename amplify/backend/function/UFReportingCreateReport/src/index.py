@@ -27,37 +27,42 @@ conn = connect(
 
 
 def execute_query_async(query):
-    query_summary = '''Query execution summary:
-        DataScanned(MB): {}
-        ExecutionTime(s): {}
-        QueuingTime(s): {}'''
+    try:
+        query_summary = '''Query execution summary:
+            DataScanned(MB): {}
+            ExecutionTime(s): {}
+            QueuingTime(s): {}'''
 
-    df = None
-    result_set = None
-    output_location = None
-    acursor = conn.cursor(AsyncCursor)
-    query_id, future = acursor.execute(query)
-    result_set = future.result()
-    if result_set.state == AthenaQueryExecution.STATE_SUCCEEDED:
-        output_location = result_set.output_location
-        result_summary = query_summary.format(result_set.data_scanned_in_bytes/100000,
-                                              result_set.engine_execution_time_in_millis/1000,
-                                              result_set.query_queue_time_in_millis/1000)
-        print(query_summary.format(result_set.data_scanned_in_bytes/100000,
-                                   result_set.engine_execution_time_in_millis/1000,
-                                   result_set.query_queue_time_in_millis/1000))
-        rows = result_set.fetchall()
-        cols = [x[0] for x in result_set.description]
-        df = pd.DataFrame(rows, columns=cols)
+        df = None
+        result_set = None
+        output_location = None
+        acursor = conn.cursor(AsyncCursor)
+        query_id, future = acursor.execute(query)
+        result_set = future.result()
+        if result_set.state == AthenaQueryExecution.STATE_SUCCEEDED:
+            output_location = result_set.output_location
+            result_summary = query_summary.format(result_set.data_scanned_in_bytes/100000,
+                                                result_set.engine_execution_time_in_millis/1000,
+                                                result_set.query_queue_time_in_millis/1000)
+            print(query_summary.format(result_set.data_scanned_in_bytes/100000,
+                                    result_set.engine_execution_time_in_millis/1000,
+                                    result_set.query_queue_time_in_millis/1000))
+            rows = result_set.fetchall()
+            cols = [x[0] for x in result_set.description]
+            df = pd.DataFrame(rows, columns=cols)
 
-        print('execute_query_async ',df)
-        acursor.close()
-        return df,result_summary,output_location,result_set
+            print('execute_query_async ',df)
+            acursor.close()
+            return df,result_summary,output_location,result_set
 
-    else:
-        print('result set error_category',result_set.error_category, 'result set error_type',result_set.error_type,'result set error_message',result_set.error_message )
-        acursor.close()
-        return df,result_set.state+' - '+result_set.error_message,output_location,result_set
+        else:
+            print('result set error_category',result_set.error_category, 'result set error_type',result_set.error_type,'result set error_message',result_set.error_message )
+            acursor.close()
+            return df,result_set.state+' - '+result_set.error_message,output_location,result_set
+    except Exception as e:
+        logger.error(
+            {"operation": "execute_query_async", "Exception": e})
+        raise Exception(e)
 
 #
 #
@@ -142,17 +147,17 @@ def handler(event, context):
       print('Exception')
       name = ""
 
-    s3 = boto3.resource('s3')
-    glue = boto3.client('glue')
-    #query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 1"
-    query = event['arguments']['input']['query']
-    #result = cursor.execute(query)
-    #df = as_pandas(cursor)
-    df, result_summary, output_location, result_set = execute_query_async(query)
-    #response = {'id': '1','result': json.loads(df.to_json(orient = 'records')),'resultSummary': result_summary, 'outputLocation': output_location}
-    
-    #print('df ', df)
-    #print('summary ', result_summary)
-    response = update_ddb(name, description, query, result_summary, output_location, result_set)
-    print('response ', response)
-    return response
+    try:
+        s3 = boto3.resource('s3')
+        glue = boto3.client('glue')
+        # query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 1"
+        query = event['arguments']['input']['query']
+        df, result_summary, output_location, result_set = execute_query_async(query)
+        response = update_ddb(name, description, query, result_summary, output_location, result_set)
+        print('response ', response)
+        return response
+    except Exception as e:
+      logger.error(
+        {"operation": "handler", "Exception": e})
+      raise Exception(e)
+     
