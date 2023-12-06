@@ -24,6 +24,7 @@ import {
   Link,
   SpaceBetween,
   Modal,
+  Input,
 } from "@cloudscape-design/components";
 //import { appLayoutLabels, itemSelectionLabels } from "../labels";
 import Navigation from "../Navigation";
@@ -33,6 +34,7 @@ import awsconfig from "../../aws-exports";
 const logger = new Logger("erdLogger", "DEBUG");
 
 Amplify.configure(awsconfig);
+
 
 const Content = (user) => {
   //console.log("Content username " + JSON.stringify(user));
@@ -48,15 +50,18 @@ const Content = (user) => {
   const [outputs, setOutputs] = useState("");
   var [alertDismissible, setAlertDismissible] = useState(false);
   var [alertSuccess, setAlertSuccess] = useState("success");
+  const [variantFrequencyValue, setVariantFrequencyValue] = React.useState("");
+  
 
   var [deploymentHeader, setDeploymentHeader] = useState(
     "Report Generation In Progress, this may take a few minutes"
   );
   const [visible, setVisible] = React.useState(false);
   const [selectValue, setSelectValue] = useState({
-    label: "List of all variant genes and coordinates",
+    label: "Sample Variants from Johnny B",
     value: "1",
   });
+  
   var [modalStatus, setModalStatus] = useState("MODAL_IN_PROGRESS");
 
   const modalExit = () => {
@@ -65,8 +70,18 @@ const Content = (user) => {
     navigate("/");
 
   };
+  const variantFrequencyChange = (detail) => {
+
+    
+    setVariantFrequencyValue(detail);
+    console.log(variantFrequencyValue);
+  
+
+  };
+  
   const submitFormHandler = (event, selectValue) => {
-    console.log('selectValue ' + JSON.stringify(selectValue));
+
+    console.log('Variant Name '+JSON.stringify(variantFrequencyValue));
     setDisabled(true);
     setAlertSuccess("success");
     setAlert("Report Generation: \"IN_PROGRESS\"");
@@ -74,39 +89,34 @@ const Content = (user) => {
     var description = "";
     var name = "";
     var query = "";
-    if (selectValue.value === '1') {
-      description = 'A report on all variants';
-      name = "All variant genes and coordinates";
-      query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
-    } else if (selectValue.value === '2') {
-      description = 'A report on all variant genes and coordinates where CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign';
-      name = "CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign";
-      query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN \"uf_genomics_reporting\".\"revel38\" AS a  ON v.variant_id = a.variant_id JOIN uf_genomics_reporting.clinvar as clin on a.variant_id = clin.variant_id WHERE a.revel >= 0.4  AND (clin.clinicalsignificance ='Benign' OR clin.clinicalsignificance = 'Likely benign') limit 100";
-    } else {
-      description = 'A report on all variant genes and coordinates where ClinVar annotations are likely_pathogenic or pathogenic';
-      name = "ClinVar annotations are likely_pathogenic or pathogenic";
-      query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" as v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (a.clinicalsignificance='Pathogenic'  OR a.clinicalsignificance = 'Likely pathogenic') limit 100 ";
    
-    }
-    console.log('name '+name);
-    console.log('description '+description);
+    var clinvarSigs = '';
+    var clinvarPredicate = ''
+    var doubleFrequencyValue = parseFloat(variantFrequencyValue);
+    clinvarPredicate = "cardinality(a.info_af) > 0 AND a.info_af[1] < "+doubleFrequencyValue;
+    console.log('clinvarPredicate '+clinvarPredicate);
+    description = 'A report on all variants for specific Variant Frequency';
+    name = 'List of all variants where Variant Frequency is > 0 and < ' + variantFrequencyValue;
+    //query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
+    query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" AS v JOIN uf_genomics_reporting.gnomad AS a ON v.variant_id = a.variant_id WHERE  ("+ clinvarPredicate +") limit 100 ";
 
-      var qinput = { input: { id: "",name: name, description: description, query: query, createdAt: 0 } }
-      API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
-   
-        console.log('createReport ' + JSON.stringify(response.data));
-        navigate("/");
+    console.log('query ' + query);
+    console.log('description ' + description);
 
+    var qinput = { input: { id: "", name: name, description: description, query: query, createdAt: 0 } }
+    API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
 
+      console.log('createReport ' + JSON.stringify(response.data));
+      navigate("/");
 
-      }).catch((error) => {
-        console.log('error ' + JSON.stringify(error));
-        setDisabled(false);
-        setAlertSuccess("error");
-        setAlert("Report Generation: \"FAILED\""+JSON.stringify(error));
-        setVisible(true);
-      })
-     
+    }).catch((error) => {
+      console.log('error ' + JSON.stringify(error));
+      setDisabled(false);
+      setAlertSuccess("error");
+      setAlert("Report Generation: \"FAILED\"" + JSON.stringify(error));
+      setVisible(true);
+    })
+
 
 
   };
@@ -144,24 +154,20 @@ const Content = (user) => {
           >
             <SpaceBetween direction="vertical" size="s">
               <FormField
-                label="Select Report and hit Submit"
-                errorText={!selectValue && "Select Report"}
+                label="Select Variants Table"
+                errorText={!selectValue && "Select Variants Table"}
               >
                 <TextContent></TextContent>
 
                 <Select
                   options={[
                     {
-                      label: "All variant genes and coordinates",
+                      label: "Sample Variants from Johnny B",
                       value: "1",
                     },
                     {
-                      label: "CADD score >=20 and REVEL >= 0.5 and ClinVar != benign and ClinVar != likely_benign",
+                      label: "Some other Variant table from Rui",
                       value: "2",
-                    },
-                    {
-                      label: "ClinVar annotations are likely_pathogenic or pathogenic",
-                      value: "3",
                     }
 
                   ]}
@@ -175,6 +181,25 @@ const Content = (user) => {
             </SpaceBetween>
 
             <SpaceBetween direction="vertical" size="s">
+              <FormField
+                label="Input Variant Frequency"
+                errorText={!selectValue && "Input Variant Frequency"}
+              >
+                <TextContent></TextContent>
+
+                <Input      
+                onChange={({ detail }) => variantFrequencyChange(detail.value)}      
+                value={variantFrequencyValue}    
+                placeholder="e.g. 0.01"
+                />
+              </FormField>
+            </SpaceBetween>
+
+            
+
+
+            <SpaceBetween direction="vertical" size="s">
+              <TextContent></TextContent>
               <Link
                 external
                 variant="primary"
@@ -225,7 +250,7 @@ const SideHelp = () => (
   </HelpPanel>
 );
 
-function Query() {
+function QueryFilterVariantName() {
   const [User, setUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -310,4 +335,4 @@ function Query() {
 }
 
 
-export default withAuthenticator(Query);;
+export default withAuthenticator(QueryFilterVariantName);;

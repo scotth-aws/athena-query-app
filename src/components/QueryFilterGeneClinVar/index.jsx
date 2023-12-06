@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-import {
-  Logger,
-  Auth,
-  API,
-  graphqlOperation,
-} from "aws-amplify";
+import { Logger, Auth, API, graphqlOperation } from "aws-amplify";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { createReport } from "../../graphql/mutations";
 import "@aws-amplify/ui-react/styles.css";
@@ -42,25 +37,24 @@ const clinsig = [
       {
         label: "Pathogenic; drug response",
         value: "1",
-        description: ""
+        description: "",
       },
       {
         label: "Pathogenic/Likely risk allele",
         value: "2",
-        description: ""
+        description: "",
       },
       {
         label: "Pathogenic; risk factor",
         value: "3",
-        description: ""
+        description: "",
       },
       {
         label: "Likely pathogenic; other",
         value: "4",
-        description: ""
-      }
-
-    ]
+        description: "",
+      },
+    ],
   },
   {
     label: "Benign",
@@ -68,15 +62,14 @@ const clinsig = [
       {
         label: "Benign; risk factor",
         value: "5",
-        description: ""
+        description: "",
       },
       {
         label: "Benign/Likely benign; association",
         value: "6",
-        description: ""
-
-      }
-    ]
+        description: "",
+      },
+    ],
   },
   {
     label: "Uncertain",
@@ -84,16 +77,16 @@ const clinsig = [
       {
         label: "Uncertain significance; risk factor",
         value: "7",
-        description: ""
+        description: "",
       },
       {
         label: "Uncertain risk allele; protective",
         value: "8",
-        description: ""
-      }
-    ]
-  }
-]
+        description: "",
+      },
+    ],
+  },
+];
 
 const Content = (user) => {
   //console.log("Content username " + JSON.stringify(user));
@@ -113,8 +106,8 @@ const Content = (user) => {
     {
       label: "Pathogenic",
       value: "1",
-      description: ""
-    }
+      description: "",
+    },
   ]);
 
   var [deploymentHeader, setDeploymentHeader] = useState(
@@ -126,29 +119,31 @@ const Content = (user) => {
     value: "1",
   });
   const [selectGeneValue, setSelectGeneValue] = useState({
-    label: "1",
-    value: "1",
+    label: "All",
+    value: "All",
   });
   var [modalStatus, setModalStatus] = useState("MODAL_IN_PROGRESS");
 
   const modalExit = () => {
-
     setVisible(false);
     navigate("/");
-
   };
   const clinvarSelection = (details) => {
-    console.log('detail ' + JSON.stringify(details));
-    setSelectedClinvarOptions(details.detail.selectedOptions)
-
-
+    console.log("detail " + JSON.stringify(details));
+    setSelectedClinvarOptions(details.detail.selectedOptions);
   };
   const submitFormHandler = (event, selectValue) => {
-
-    console.log('submitFormHandler selectValue ' + JSON.stringify(selectValue) + '  ' + JSON.stringify(selectedClinvarOptions) + ' ' + JSON.stringify(selectGeneValue));
+    console.log(
+      "submitFormHandler selectValue " +
+        JSON.stringify(selectValue) +
+        "  " +
+        JSON.stringify(selectedClinvarOptions) +
+        " " +
+        JSON.stringify(selectGeneValue)
+    );
     setDisabled(true);
     setAlertSuccess("success");
-    setAlert("Report Generation: \"IN_PROGRESS\"");
+    setAlert('Report Generation: "IN_PROGRESS"');
     setVisible(true);
     var description = "";
     var name = "";
@@ -168,49 +163,73 @@ const Content = (user) => {
       query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
     }
     */
-    var clinvarSigs = '';
-    var clinvarPredicate = ''
+    var clinvarSigs = "";
+    var clinvarPredicate = "";
     for (var i = 0; i < selectedClinvarOptions.length; i++) {
       clinvarSigs = clinvarSigs + selectedClinvarOptions[i].label;
-      clinvarPredicate = clinvarPredicate + "a.clinicalsignificance = " + "'"+selectedClinvarOptions[i].label+"'";
+      clinvarPredicate =
+        clinvarPredicate +
+        "a.clinicalsignificance = " +
+        "'" +
+        selectedClinvarOptions[i].label +
+        "'";
       if (i < selectedClinvarOptions.length - 1) {
-        clinvarSigs = clinvarSigs + ' OR ';
-        clinvarPredicate = clinvarPredicate + ' OR ';
-      
+        clinvarSigs = clinvarSigs + " OR ";
+        clinvarPredicate = clinvarPredicate + " OR ";
       }
-
-
     }
-    console.log('clinvarPredicate '+clinvarPredicate);
-    description = 'A report on all variants for specific gene and clinvar significance';
-    name = 'List of all variants where gene is ' + selectGeneValue.value + ' and clinvar significance is ' + clinvarSigs;
+    console.log("clinvarPredicate " + clinvarPredicate);
+    description =
+      "A report on all variants for specific chromosome and clinvar significance";
+    name =
+      "List of all variants where chromosome is " +
+      selectGeneValue.value +
+      " and clinvar significance is " +
+      clinvarSigs;
     //query = "SELECT * from \"uf_genomics_reporting\".\"uf_variants\" limit 100";
-    query = "SELECT * FROM \"uf_genomics_reporting\".\"uf_variants\" AS v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  ("+ clinvarPredicate +") and v.chrom = '" + selectGeneValue.value + "' limit 100 ";
+    if (selectGeneValue.value == "All") {
+      query =
+        'SELECT * FROM "uf_genomics_reporting"."uf_variants" AS v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (' +
+        clinvarPredicate +
+        ") limit 100 ";
+    } else {
+      query =
+        'SELECT * FROM "uf_genomics_reporting"."uf_variants" AS v JOIN uf_genomics_reporting.clinvar AS a ON v.variant_id = a.variant_id WHERE  (' +
+        clinvarPredicate +
+        ") and v.chrom = '" +
+        selectGeneValue.value +
+        "' limit 100 ";
+    }
+    console.log("query " + query);
+    console.log("description " + description);
 
-    console.log('name ' + name);
-    console.log('description ' + description);
-
-    var qinput = { input: { id: "", name: name, description: description, query: query, createdAt: 0 } }
-    API.graphql(graphqlOperation(createReport, qinput)).then((response, error) => {
-
-      console.log('createReport ' + JSON.stringify(response.data));
-      navigate("/");
-
-    }).catch((error) => {
-      console.log('error ' + JSON.stringify(error));
-      setDisabled(false);
-      setAlertSuccess("error");
-      setAlert("Report Generation: \"FAILED\"" + JSON.stringify(error));
-      setVisible(true);
-    })
-
-
-
+    var qinput = {
+      input: {
+        id: "",
+        name: name,
+        description: description,
+        query: query,
+        createdAt: 0,
+      },
+    };
+    API.graphql(graphqlOperation(createReport, qinput))
+      .then((response, error) => {
+        console.log("createReport " + JSON.stringify(response.data));
+        navigate("/");
+      })
+      .catch((error) => {
+        console.log("error " + JSON.stringify(error));
+        setDisabled(false);
+        setAlertSuccess("error");
+        setAlert('Report Generation: "FAILED"' + JSON.stringify(error));
+        setVisible(true);
+      });
   };
   return (
     <div id="top" className="ec2App">
       <SpaceBetween direction="vertical" size="l">
-        <Container variant="stacked"
+        <Container
+          variant="stacked"
           header={
             <Header variant="h3">
               <strong style={{ color: headerColor }}>
@@ -255,8 +274,7 @@ const Content = (user) => {
                     {
                       label: "Some other Variant table from Rui",
                       value: "2",
-                    }
-
+                    },
                   ]}
                   selectedOption={selectValue}
                   onChange={(event) =>
@@ -269,13 +287,17 @@ const Content = (user) => {
 
             <SpaceBetween direction="vertical" size="s">
               <FormField
-                label="Select Gene"
-                errorText={!selectValue && "Select Gene"}
+                label="Select Chromosome"
+                errorText={!selectValue && "Select Chromosome"}
               >
                 <TextContent></TextContent>
 
                 <Select
                   options={[
+                    {
+                      label: "All",
+                      value: "All",
+                    },
                     {
                       label: "1",
                       value: "1",
@@ -364,7 +386,6 @@ const Content = (user) => {
                       label: "22",
                       value: "22",
                     },
-
                   ]}
                   selectedOption={selectGeneValue}
                   onChange={(event) =>
@@ -384,15 +405,12 @@ const Content = (user) => {
 
                 <Multiselect
                   selectedOptions={selectedClinvarOptions}
-                  onChange={(details) =>
-                    clinvarSelection(details)
-                  }
+                  onChange={(details) => clinvarSelection(details)}
                   options={clinsig}
                   placeholder="Choose options"
                 />
               </FormField>
             </SpaceBetween>
-
 
             <SpaceBetween direction="vertical" size="s">
               <TextContent></TextContent>
@@ -400,7 +418,7 @@ const Content = (user) => {
                 external
                 variant="primary"
                 externalIconAriaLabel=""
-                href="https://neurology.ufl.edu/divisions/lnn/"
+                href="https://hobi.med.ufl.edu/profile/bian-jiang/"
                 disabled={linkDisabled}
               >
                 Learn more about these Reports
@@ -413,7 +431,10 @@ const Content = (user) => {
                 closeAriaLabel="Close modal"
                 footer={
                   <Box float="right">
-                    <SpaceBetween direction="horizontal" size="xs"></SpaceBetween>
+                    <SpaceBetween
+                      direction="horizontal"
+                      size="xs"
+                    ></SpaceBetween>
                   </Box>
                 }
                 header={deploymentHeader}
@@ -425,7 +446,6 @@ const Content = (user) => {
               </Modal>
             </Box>
           </Container>
-
         </Form>
       </SpaceBetween>
     </div>
@@ -433,16 +453,12 @@ const Content = (user) => {
 };
 
 const SideHelp = () => (
-
   <HelpPanel header={<h2>Variant Report Help</h2>}>
     <SpaceBetween size="m">
       <Box>
         <strong>This is where help around the report generation will be</strong>
-
       </Box>
-
     </SpaceBetween>
-
   </HelpPanel>
 );
 
@@ -467,8 +483,11 @@ function QueryFilterGeneClinVar() {
           current_user.isLoggedIn = true;
           current_user.username = user.username;
           current_user.token = user.signInUserSession.idToken["jwtToken"];
-          if (process.env.NODE_ENV === 'development')
-            console.log('Auth.currentAuthenticatedUser called current user is ' + user.username);
+          if (process.env.NODE_ENV === "development")
+            console.log(
+              "Auth.currentAuthenticatedUser called current user is " +
+                user.username
+            );
           if (
             user.signInUserSession.idToken.payload["cognito:groups"] !==
             undefined
@@ -476,16 +495,15 @@ function QueryFilterGeneClinVar() {
             current_user.isAdmin = true;
           setUser(current_user);
           setIsLoading(false);
-
         })
-        .catch(
-          (err) => {
-            setIsLoading(false);
-            if (process.env.NODE_ENV === 'development')
-              console.log("Home -> index.jsx - Auth error " + JSON.stringify(err), Date.now())
-
-          });
-
+        .catch((err) => {
+          setIsLoading(false);
+          if (process.env.NODE_ENV === "development")
+            console.log(
+              "Home -> index.jsx - Auth error " + JSON.stringify(err),
+              Date.now()
+            );
+        });
     } catch (e) {
       console.log("setUser Error");
       setUser(current_user);
@@ -530,5 +548,4 @@ function QueryFilterGeneClinVar() {
   }
 }
 
-
-export default withAuthenticator(QueryFilterGeneClinVar);;
+export default withAuthenticator(QueryFilterGeneClinVar);

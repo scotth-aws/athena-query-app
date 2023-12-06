@@ -47,7 +47,10 @@ const Navigation = (current_user) => {
             items: [
 
                 { type: "link", text: "Top 3 Variant Reports", href: "/Query" },
-                { type: "link", text: "Filtered Variant Reports by Genes and ClinVar", href: "QueryFilterGeneClinVar" }
+                { type: "link", text: "Filtered Variant Reports by Chromosome and ClinVar", href: "QueryFilterGeneClinVar" },
+                { type: "link", text: "Filtered Variant Reports by Gene Name", href: "QueryFilterGeneName" },
+                { type: "link", text: "Filtered Variant Reports by Variant Name", href: "QueryFilterVariantName" },
+                { type: "link", text: "Filtered Variant Reports by Variant Frequency", href: "QueryFilterVariantFrequency" }
 
             ]
         });
